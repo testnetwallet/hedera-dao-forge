@@ -9,8 +9,12 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-card">
       <Navbar />
       <Hero />
-      <Features />
-      <HowItWorks />
+      <div id="features">
+        <Features />
+      </div>
+      <div id="how-it-works">
+        <HowItWorks />
+      </div>
       <CTA />
       
       {/* Footer */}
