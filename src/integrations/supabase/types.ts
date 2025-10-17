@@ -14,7 +14,192 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      dao_members: {
+        Row: {
+          dao_id: string
+          hedera_account_id: string
+          id: string
+          joined_at: string | null
+          token_balance: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          dao_id: string
+          hedera_account_id: string
+          id?: string
+          joined_at?: string | null
+          token_balance?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          dao_id?: string
+          hedera_account_id?: string
+          id?: string
+          joined_at?: string | null
+          token_balance?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dao_members_dao_id_fkey"
+            columns: ["dao_id"]
+            isOneToOne: false
+            referencedRelation: "daos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      daos: {
+        Row: {
+          contract_id: string | null
+          created_at: string | null
+          creator_id: string | null
+          description: string
+          id: string
+          initial_supply: number
+          name: string
+          quorum_percentage: number
+          symbol: string
+          token_id: string | null
+          topic_id: string | null
+          updated_at: string | null
+          voting_period_days: number
+        }
+        Insert: {
+          contract_id?: string | null
+          created_at?: string | null
+          creator_id?: string | null
+          description: string
+          id?: string
+          initial_supply: number
+          name: string
+          quorum_percentage: number
+          symbol: string
+          token_id?: string | null
+          topic_id?: string | null
+          updated_at?: string | null
+          voting_period_days: number
+        }
+        Update: {
+          contract_id?: string | null
+          created_at?: string | null
+          creator_id?: string | null
+          description?: string
+          id?: string
+          initial_supply?: number
+          name?: string
+          quorum_percentage?: number
+          symbol?: string
+          token_id?: string | null
+          topic_id?: string | null
+          updated_at?: string | null
+          voting_period_days?: number
+        }
+        Relationships: []
+      }
+      proposals: {
+        Row: {
+          created_at: string | null
+          dao_id: string
+          description: string
+          ends_at: string
+          id: string
+          message_sequence_number: number | null
+          proposer_id: string | null
+          quorum_required: number
+          status: string
+          title: string
+          total_votes: number | null
+          updated_at: string | null
+          votes_against: number | null
+          votes_for: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          dao_id: string
+          description: string
+          ends_at: string
+          id?: string
+          message_sequence_number?: number | null
+          proposer_id?: string | null
+          quorum_required: number
+          status?: string
+          title: string
+          total_votes?: number | null
+          updated_at?: string | null
+          votes_against?: number | null
+          votes_for?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          dao_id?: string
+          description?: string
+          ends_at?: string
+          id?: string
+          message_sequence_number?: number | null
+          proposer_id?: string | null
+          quorum_required?: number
+          status?: string
+          title?: string
+          total_votes?: number | null
+          updated_at?: string | null
+          votes_against?: number | null
+          votes_for?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposals_dao_id_fkey"
+            columns: ["dao_id"]
+            isOneToOne: false
+            referencedRelation: "daos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      votes: {
+        Row: {
+          created_at: string | null
+          hedera_account_id: string
+          id: string
+          proposal_id: string
+          transaction_id: string | null
+          vote_choice: string
+          vote_weight: number
+          voter_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          hedera_account_id: string
+          id?: string
+          proposal_id: string
+          transaction_id?: string | null
+          vote_choice: string
+          vote_weight: number
+          voter_id: string
+        }
+        Update: {
+          created_at?: string | null
+          hedera_account_id?: string
+          id?: string
+          proposal_id?: string
+          transaction_id?: string | null
+          vote_choice?: string
+          vote_weight?: number
+          voter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "votes_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "proposals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
