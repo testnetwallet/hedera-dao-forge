@@ -8,6 +8,7 @@ import { Plus, TrendingUp, Users, Vote, Clock, CheckCircle2, XCircle } from "luc
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 const mockProposals = [
   {
@@ -48,12 +49,22 @@ const mockProposals = [
 const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [proposals, setProposals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to access the dashboard",
+        variant: "destructive",
+      });
+      navigate("/auth");
+      return;
+    }
     fetchProposals();
-  }, []);
+  }, [user, navigate, toast]);
 
   const fetchProposals = async () => {
     try {

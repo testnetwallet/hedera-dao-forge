@@ -1,12 +1,13 @@
 import { Button } from "@/components/ui/button";
-import { Hexagon, Menu } from "lucide-react";
+import { Hexagon, Menu, LogOut } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import WalletConnect from "./WalletConnect";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass-card border-b border-border/30">
@@ -28,13 +29,24 @@ const Navbar = () => {
             <a href="/#how-it-works" className="text-sm font-medium hover:text-primary transition-colors">
               How It Works
             </a>
-            <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
-              Dashboard
-            </Button>
-            <WalletConnect />
-            <Button variant="hero" size="sm" onClick={() => navigate("/create-dao")}>
-              Create DAO
-            </Button>
+            {user ? (
+              <>
+                <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
+                  Dashboard
+                </Button>
+                <Button variant="hero" size="sm" onClick={() => navigate("/create-dao")}>
+                  Create DAO
+                </Button>
+                <Button variant="ghost" size="sm" onClick={signOut}>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <Button variant="hero" size="sm" onClick={() => navigate("/auth")}>
+                Sign In
+              </Button>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -56,13 +68,24 @@ const Navbar = () => {
               <a href="/#how-it-works" className="text-sm font-medium hover:text-primary transition-colors">
                 How It Works
               </a>
-              <Button variant="ghost" size="sm" className="w-full" onClick={() => navigate("/dashboard")}>
-                Dashboard
-              </Button>
-              <WalletConnect />
-              <Button variant="hero" size="sm" className="w-full" onClick={() => navigate("/create-dao")}>
-                Create DAO
-              </Button>
+              {user ? (
+                <>
+                  <Button variant="ghost" size="sm" className="w-full" onClick={() => navigate("/dashboard")}>
+                    Dashboard
+                  </Button>
+                  <Button variant="hero" size="sm" className="w-full" onClick={() => navigate("/create-dao")}>
+                    Create DAO
+                  </Button>
+                  <Button variant="ghost" size="sm" className="w-full" onClick={signOut}>
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </>
+              ) : (
+                <Button variant="hero" size="sm" className="w-full" onClick={() => navigate("/auth")}>
+                  Sign In
+                </Button>
+              )}
             </div>
           </div>
         )}

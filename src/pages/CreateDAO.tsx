@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
@@ -9,11 +9,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ArrowLeft, Coins, FileText, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 const CreateDAO = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [isCreating, setIsCreating] = useState(false);
+
+  useEffect(() => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to create a DAO",
+        variant: "destructive",
+      });
+      navigate("/auth");
+    }
+  }, [user, navigate, toast]);
 
   const [formData, setFormData] = useState({
     name: "",
