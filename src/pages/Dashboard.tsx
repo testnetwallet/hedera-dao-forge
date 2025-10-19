@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Plus, TrendingUp, Users, Vote, Clock, CheckCircle2, XCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const mockProposals = [
   {
@@ -44,6 +47,58 @@ const mockProposals = [
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [proposals, setProposals] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchProposals();
+  }, []);
+
+  const fetchProposals = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('proposals')
+        .select('*, daos(*)')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setProposals(data || []);
+    } catch (error: any) {
+      console.error('Error fetching proposals:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load proposals",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVote = async (proposalId: string) => {
+    try {
+      const { error } = await supabase.functions.invoke('cast-vote', {
+        body: { proposalId, voteChoice: 'for' },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Vote Cast!",
+        description: "Your vote has been recorded on Hedera",
+      });
+
+      fetchProposals();
+    } catch (error: any) {
+      console.error('Error casting vote:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to cast vote",
+        variant: "destructive",
+      });
+    }
+  };
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, { variant: "default" | "secondary" | "destructive" | "outline", icon: any }> = {
@@ -105,7 +160,20 @@ const Dashboard = () => {
         <div className="space-y-4">
           <h2 className="text-2xl font-bold">Active Proposals</h2>
           
-          {mockProposals.map((proposal) => (
+          {loading ? (
+            <Card className="glass-card border-border/30">
+              <CardContent className="pt-6">
+                <p className="text-center text-muted-foreground">Loading proposals...</p>
+              </CardContent>
+            </Card>
+          ) : proposals.length === 0 ? (
+            <Card className="glass-card border-border/30">
+              <CardContent className="pt-6">
+                <p className="text-center text-muted-foreground">No proposals yet. Create one to get started!</p>
+              </CardContent>
+            </Card>
+          ) : (
+            proposals.map((proposal) => (
             <Card key={proposal.id} className="glass-card border-border/30 hover:shadow-card transition-all duration-300">
               <CardHeader>
                 <div className="flex items-start justify-between">
@@ -117,7 +185,7 @@ const Dashboard = () => {
                     <CardDescription>{proposal.description}</CardDescription>
                   </div>
                   {proposal.status === "active" && (
-                    <Button variant="hero" size="sm">
+                    <Button variant="hero" size="sm" onClick={() => handleVote(proposal.id)}>
                       Vote Now
                     </Button>
                   )}
@@ -128,33 +196,40 @@ const Dashboard = () => {
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Progress</span>
                     <span className="font-medium">
-                      {proposal.totalVotes.toLocaleString()} / {proposal.quorum.toLocaleString()} votes
+                      {proposal.total_votes.toLocaleString()} / {proposal.quorum_required.toLocaleString()} votes
                     </span>
                   </div>
-                  <Progress value={(proposal.totalVotes / proposal.quorum) * 100} className="h-2" />
+                  <Progress value={(proposal.total_votes / proposal.quorum_required) * 100} className="h-2" />
                 </div>
 
                 <div className="grid grid-cols-3 gap-4 pt-2">
                   <div>
                     <div className="text-sm text-muted-foreground mb-1">For</div>
                     <div className="text-lg font-bold text-accent">
-                      {((proposal.votesFor / proposal.totalVotes) * 100).toFixed(1)}%
+                      {proposal.total_votes > 0 
+                        ? ((proposal.votes_for / proposal.total_votes) * 100).toFixed(1)
+                        : 0}%
                     </div>
                   </div>
                   <div>
                     <div className="text-sm text-muted-foreground mb-1">Against</div>
                     <div className="text-lg font-bold text-destructive">
-                      {((proposal.votesAgainst / proposal.totalVotes) * 100).toFixed(1)}%
+                      {proposal.total_votes > 0
+                        ? ((proposal.votes_against / proposal.total_votes) * 100).toFixed(1)
+                        : 0}%
                     </div>
                   </div>
                   <div>
-                    <div className="text-sm text-muted-foreground mb-1">Ends In</div>
-                    <div className="text-lg font-bold">{proposal.endsIn}</div>
+                    <div className="text-sm text-muted-foreground mb-1">Ends At</div>
+                    <div className="text-lg font-bold">
+                      {new Date(proposal.ends_at).toLocaleDateString()}
+                    </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </div>

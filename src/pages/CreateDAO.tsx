@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Coins, FileText, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const CreateDAO = () => {
   const navigate = useNavigate();
@@ -27,15 +28,39 @@ const CreateDAO = () => {
     e.preventDefault();
     setIsCreating(true);
 
-    // Simulate DAO creation - will integrate with Hedera SDK
-    setTimeout(() => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to create a DAO",
+          variant: "destructive",
+        });
+        navigate("/");
+        return;
+      }
+
+      const response = await supabase.functions.invoke('create-dao', {
+        body: formData,
+      });
+
+      if (response.error) throw response.error;
+
       toast({
         title: "DAO Created Successfully!",
         description: `${formData.name} is now live on Hedera`,
       });
-      setIsCreating(false);
       navigate("/dashboard");
-    }, 2000);
+    } catch (error: any) {
+      console.error('Error creating DAO:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create DAO",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
