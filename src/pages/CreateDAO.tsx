@@ -54,7 +54,12 @@ const CreateDAO = () => {
       }
 
       const response = await supabase.functions.invoke('create-dao', {
-        body: formData,
+        body: {
+          ...formData,
+          initialSupply: Number(formData.initialSupply),
+          quorumPercentage: Number(formData.quorumPercentage),
+          votingPeriod: Number(formData.votingPeriod),
+        },
       });
 
       if (response.error) throw response.error;
