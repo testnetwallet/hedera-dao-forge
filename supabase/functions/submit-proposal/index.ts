@@ -59,9 +59,19 @@ serve(async (req) => {
     if (memberError || !member) throw new Error('Not a DAO member');
 
     // Initialize Hedera client
-    const operatorId = AccountId.fromString(Deno.env.get('HEDERA_OPERATOR_ID')!);
-    const operatorKey = PrivateKey.fromStringED25519(Deno.env.get('HEDERA_OPERATOR_KEY')!);
-    const client = Client.forTestnet().setOperator(operatorId, operatorKey);
+const operatorId = AccountId.fromString(Deno.env.get('HEDERA_OPERATOR_ID')!);
+const rawKey = Deno.env.get('HEDERA_OPERATOR_KEY')!;
+let operatorKey: PrivateKey;
+try {
+  operatorKey = PrivateKey.fromString(rawKey);
+} catch (_e1) {
+  try {
+    operatorKey = PrivateKey.fromStringED25519(rawKey);
+  } catch (_e2) {
+    throw new Error('Invalid HEDERA_OPERATOR_KEY format. Provide DER hex (starting with 302e...) or raw Ed25519 private key.');
+  }
+}
+const client = Client.forTestnet().setOperator(operatorId, operatorKey);
 
     // Calculate quorum and end time
     const quorumRequired = Math.floor((dao.initial_supply * dao.quorum_percentage) / 100);
