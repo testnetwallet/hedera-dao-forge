@@ -7,6 +7,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import Index from "./pages/Index";
 import CreateDAO from "./pages/CreateDAO";
 import Dashboard from "./pages/Dashboard";
+import NewProposal from "./pages/NewProposal";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -24,6 +25,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/create-dao" element={<CreateDAO />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/proposal/new" element={<NewProposal />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
